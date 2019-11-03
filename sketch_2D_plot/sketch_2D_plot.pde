@@ -4,10 +4,7 @@ float maxX=3;
 float maxY=maxX*(height/(float)width);
 float radius=1;
 boolean clicked;
-float[] x;
-float[] y;
-float[] a;
-float[] range;
+float[] x, y, a, range;
 int i=0, maxPoints=7, maxRange=5000;
 
 void setup(){
@@ -23,18 +20,18 @@ void setup(){
   range=genRange(0, width, (float)width/maxRange);
   
   for(int i=0;i<maxPoints;++i) a[i]=0;
-  //Print(a);
-  //Print(range);
-  //println("maxX: "+maxX+", maxY: "+maxY);
 }
 
 void draw(){
-  background(225,225,225);
-  for(int i=0;i<x.length;++i) drawPoint(x[i]*(float)width/maxX, y[i]*(float)height/maxY, 5);
+  background(225);
+  x[i]=mouseX/(float)width*maxX;
+  y[i]=mouseY/(float)height*maxY;
+  for(int j=0;j<i+1 && j<maxPoints;++j) drawPoint(x[j]*(float)width/maxX, y[j]*(float)height/maxY, 5);
   if(isClicked()){
-    a=solveMat(x,y,i);
-    //Print(a);
+    if(i+1<maxPoints) ++i;
+    else for(;i!=0;) x[--i]=y[i]=0;
   }
+  if(i+1<=maxPoints) a=solveMat(x,y,i+1);
   drawFunc(a,range);
 }
 
@@ -47,19 +44,12 @@ boolean isClicked(){
 }
 
 void mouseClicked(){
-  if(i>=maxPoints) for(;i!=0;) x[--i]=y[i]=0;
-  x[i]=mouseX/(float)width*maxX;
-  y[i++]=mouseY/(float)height*maxY;
-  //println("\n"+x[i-1]+", "+y[i-1]);
   clicked=true;
 }
 
 float[] solveMat(float[] x, float[] y, int count){
   float[] a=new float[x.length];
   float[][] mat=createMat(x,y,count);
-  
-  //println("\nMatrix:");
-  //printMat(mat);
   
   for(int i=0;i<count;++i){
     divMat(mat[i][i], mat, i);
@@ -70,9 +60,6 @@ float[] solveMat(float[] x, float[] y, int count){
     }
   }
   
-  //println("\nInt Matrix:");
-  //printMat(mat);
-  
   for(int i=count-1;i>=0;--i){
     for(int j=i-1;j>=0;--j){
       mulMat(mat[j][i]/mat[i][i], mat, i);
@@ -81,9 +68,6 @@ float[] solveMat(float[] x, float[] y, int count){
     }
     divMat(mat[i][i], mat, i);
   }
-  
-  //println("\nResult Matrix:");
-  //printMat(mat);
   
   for(int i=0;i<count;++i) a[i]=mat[count-1-i][count];
   
@@ -150,15 +134,4 @@ float calc(float x, float[] a){
   }
   
   return res;
-}
-
-void printMat(float[][] mat){
-  for(int i=0;i<mat.length;++i){
-    Print(mat[i]);
-    println();
-  }
-}
-
-void Print(float[] data){
-  for(int i=0;i<data.length;++i) print(data[i]+"\t\t");
 }
